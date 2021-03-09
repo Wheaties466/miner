@@ -67,24 +67,8 @@ mark(Module, Mark) ->
 metadata_fun() ->
     try
         Map = blockchain_worker:signed_metadata_fun(),
-        case miner_lora:position() of
-            %% GPS location that's adequately close to the asserted
-            %% location
-            {ok, _} ->
-                Map#{<<"gps_fix_quality">> => <<"good_fix">>};
-            %% the assert location is too far from the fix
-            {ok, bad_assert, _} ->
-                Map#{<<"gps_fix_quality">> => <<"bad_assert">>};
-            %% no gps fix
-            {error, no_fix} ->
-                Map#{<<"gps_fix_quality">> => <<"no_fix">>};
-            %% no location asserted somehow
-            {error, not_asserted} ->
-                Map#{<<"gps_fix_quality">> => <<"not_asserted">>};
-            %% got nonsense or a hopefully transient error, return nothing
-            _ ->
-                Map#{<<"gps_fix_quality">> => <<"no_fix">>}
-        end
+        Vsn = element(2, hd(release_handler:which_releases(permanent))),
+        Map#{<<"release_version">> => list_to_binary(Vsn)}
     catch _:_ ->
-            #{}
+              #{}
     end.
